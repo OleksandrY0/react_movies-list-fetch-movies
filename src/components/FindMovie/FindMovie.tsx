@@ -21,7 +21,10 @@ export const FindMovie: React.FC<Props> = ({ movies, addMovie }) => {
     title: data.Title,
     description: data.Plot,
     imgUrl: data.Poster !== 'N/A' ? data.Poster : '',
-    imdbUrl: `https://www.imdb.com/title/${data.imdbID}`,
+    imgUrl:
+      data.Poster && data.Poster !== 'N/A'
+        ? data.Poster
+        : 'https://via.placeholder.com/360x270.png?text=no%20preview',
   });
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -34,9 +37,9 @@ export const FindMovie: React.FC<Props> = ({ movies, addMovie }) => {
         if (!res || 'Error' in res) {
           setError('Film did not finded');
           setMovie(null);
+        } else {
+          setMovie(normalizeMovie(res));
         }
-
-        setMovie(normalizeMovie(res));
       })
       .finally(() => setLoading(false));
   };
@@ -44,11 +47,10 @@ export const FindMovie: React.FC<Props> = ({ movies, addMovie }) => {
   const handleAddButton = (m: Movie) => {
     const res = movies.some(movieFromList => movieFromList.imdbId === m.imdbId);
 
-    if (res) {
-      return;
+    if (!res) {
+      addMovie(movie);
     }
 
-    addMovie(m);
     setMovie(null);
     setTitle('');
     setError('');
@@ -89,7 +91,7 @@ export const FindMovie: React.FC<Props> = ({ movies, addMovie }) => {
             <button
               data-cy="searchButton"
               type="submit"
-              disabled={title.length < 1}
+              disabled={title.trim().length === 0}
               className={`button is-light ${loading ? 'is-loading' : ''}`}
             >
               Find a movie
